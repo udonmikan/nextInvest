@@ -34,9 +34,11 @@
                 <i data-lucide="zap" class="text-blue-400 fill-blue-400"></i> NEXTINVEST AI
             </div>
             <div class="hidden md:flex gap-8 text-xs font-medium uppercase tracking-widest">
-                <a href="#market" class="hover:text-blue-300">Market</a>
-                <a href="#analysis" class="hover:text-blue-300">Analytics</a>
-                <a href="#nisa" class="hover:text-blue-300">NISA</a>
+                <a href="#market" class="hover:text-blue-300 transition">Market</a>
+                <a href="#analysis" class="hover:text-blue-300 transition">Analytics</a>
+                <a href="#rankings" class="hover:text-blue-300 transition">Rankings</a>
+                <a href="#nisa" class="hover:text-blue-300 transition">NISA</a>
+                <a href="#glossary" class="hover:text-blue-300 transition">Glossary</a>
             </div>
             <button class="bg-blue-600 text-white px-6 py-2 rounded-full font-bold text-sm">LIVE</button>
         </div>
@@ -47,7 +49,7 @@
         <div class="max-w-6xl mx-auto grid lg:grid-cols-2 gap-16 items-center">
             <div>
                 <h1 class="text-5xl md:text-7xl font-extrabold mb-8 leading-tight">市場の「今」を<br><span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-emerald-400">AIが即時解析。</span></h1>
-                <p class="text-xl text-gray-400 mb-12">最新の Fear & Greed Index や為替変動をダッシュボードに反映。</p>
+                <p class="text-xl text-gray-400 mb-12">最新の Fear & Greed Index や為替変動をダッシュボードに自動反映。</p>
                 <div class="flex gap-4">
                     <a href="#analysis" class="bg-blue-600 px-8 py-4 rounded-full font-bold hover:bg-blue-500 transition">AI分析を開始</a>
                 </div>
@@ -55,7 +57,7 @@
 
             <div class="grid grid-cols-2 gap-4">
                 <div class="glass-card p-6 flex flex-col items-center justify-center text-center">
-                    <div class="text-[10px] font-bold text-gray-500 mb-4 uppercase">Fear & Greed Index <span id="fg-loading" class="w-2 h-2 bg-blue-500 rounded-full animate-ping hidden"></span></div>
+                    <div class="text-[10px] font-bold text-gray-500 mb-4 uppercase flex items-center gap-2">Fear & Greed Index <span id="fg-loading" class="w-2 h-2 bg-blue-500 rounded-full animate-ping hidden"></span></div>
                     <div class="gauge-container">
                         <div class="gauge-bg"></div>
                         <div id="fg-fill" class="gauge-fill" style="transform: rotate(45deg);"></div>
@@ -71,7 +73,10 @@
                         <div class="text-3xl font-black mb-1" id="fx-rate">---.--</div>
                         <div class="text-xs font-bold" id="fx-change">--.--</div>
                     </div>
-                    <div class="mt-4 pt-4 border-t border-white/5 text-[10px] text-gray-500" id="update-time">--:--:--</div>
+                    <div class="mt-4 pt-4 border-t border-white/5 text-[10px] text-gray-500 flex justify-between">
+                        <span>Updated</span>
+                        <span id="update-time">--:--:--</span>
+                    </div>
                 </div>
                 <div class="glass-card p-6 col-span-2 flex items-center justify-between">
                     <div class="flex gap-8">
@@ -90,18 +95,52 @@
             <div class="flex flex-col lg:flex-row gap-8">
                 <div class="w-full lg:w-1/3 flex flex-col gap-3">
                     <h2 class="text-3xl font-bold mb-4">AI分析ツール</h2>
-                    <button onclick="switchTab('us')" id="tab-us" class="tab-btn active p-5 glass-card text-left flex items-center gap-4"><i data-lucide="globe"></i>米国株</button>
-                    <button onclick="switchTab('jp')" id="tab-jp" class="tab-btn p-5 glass-card text-left flex items-center gap-4"><i data-lucide="flag"></i>日本株</button>
-                    <button onclick="switchTab('fund')" id="tab-fund" class="tab-btn p-5 glass-card text-left flex items-center gap-4"><i data-lucide="layers"></i>投資信託</button>
+                    <button onclick="switchTab('us')" id="tab-us" class="tab-btn active p-5 glass-card text-left flex items-center gap-4 glass-card-hover"><i data-lucide="globe"></i>米国株</button>
+                    <button onclick="switchTab('jp')" id="tab-jp" class="tab-btn p-5 glass-card text-left flex items-center gap-4 glass-card-hover"><i data-lucide="flag"></i>日本株</button>
+                    <button onclick="switchTab('fund')" id="tab-fund" class="tab-btn p-5 glass-card text-left flex items-center gap-4 glass-card-hover"><i data-lucide="layers"></i>投資信託</button>
                 </div>
                 <div class="w-full lg:w-2/3 glass-card p-8">
                     <div class="relative mb-8">
-                        <input id="stock-input" type="text" placeholder="銘柄を入力..." class="w-full bg-white/5 border border-white/10 rounded-2xl py-5 px-6 focus:ring-2 focus:ring-blue-500 text-xl font-light">
-                        <button onclick="runAnalysis()" class="absolute right-3 top-3 bg-blue-600 px-8 py-3 rounded-xl font-bold hover:bg-blue-500">分析実行</button>
+                        <input id="stock-input" type="text" placeholder="銘柄名やコードを入力..." class="w-full bg-white/5 border border-white/10 rounded-2xl py-5 px-6 focus:ring-2 focus:ring-blue-500 text-xl font-light">
+                        <button onclick="runAnalysis()" class="absolute right-3 top-3 bg-blue-600 px-8 py-3 rounded-xl font-bold hover:bg-blue-500 transition shadow-lg shadow-blue-500/20">分析実行</button>
                     </div>
                     <div id="analysis-result" class="min-h-[300px] flex flex-col items-center justify-center text-gray-500 border-2 border-dashed border-white/10 rounded-3xl">
+                        <i data-lucide="cpu" size="48" class="mb-4 opacity-10"></i>
                         <p>分析対象を入力してください</p>
                     </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Rankings Section -->
+    <section id="rankings" class="py-20 px-6">
+        <div class="max-w-6xl mx-auto">
+            <h2 class="text-3xl font-bold mb-10 flex items-center gap-3">
+                <i data-lucide="award" class="text-yellow-400"></i>
+                日本株 優待・配当利回りランキング
+            </h2>
+            <div class="grid md:grid-cols-3 gap-6">
+                <div class="glass-card p-8 glass-card-hover relative overflow-hidden">
+                    <div class="absolute -right-4 -top-4 opacity-5"><i data-lucide="trending-up" size="120"></i></div>
+                    <div class="text-blue-400 font-bold mb-2">RANK #1</div>
+                    <h3 class="text-xl font-bold mb-1">9101 日本郵船</h3>
+                    <p class="text-sm text-gray-400 mb-4">海運業の世界的リーダー。非常に高い配当還元が魅力。</p>
+                    <div class="text-2xl font-black text-emerald-400">利回り 14.2%</div>
+                </div>
+                <div class="glass-card p-8 glass-card-hover relative overflow-hidden">
+                    <div class="absolute -right-4 -top-4 opacity-5"><i data-lucide="trending-up" size="120"></i></div>
+                    <div class="text-blue-400 font-bold mb-2">RANK #2</div>
+                    <h3 class="text-xl font-bold mb-1">2914 JT</h3>
+                    <p class="text-sm text-gray-400 mb-4">安定的な利益率。優待は廃止されたが、圧倒的高配当。</p>
+                    <div class="text-2xl font-black text-emerald-400">利回り 6.8%</div>
+                </div>
+                <div class="glass-card p-8 glass-card-hover relative overflow-hidden">
+                    <div class="absolute -right-4 -top-4 opacity-5"><i data-lucide="gift" size="120"></i></div>
+                    <div class="text-blue-400 font-bold mb-2">RANK #3</div>
+                    <h3 class="text-xl font-bold mb-1">8591 オリックス</h3>
+                    <p class="text-sm text-gray-400 mb-4">リース・金融最大手。優待のカタログギフトは最終盤だが人気。</p>
+                    <div class="text-2xl font-black text-emerald-400">総合評価 A+</div>
                 </div>
             </div>
         </div>
@@ -123,6 +162,43 @@
         </div>
     </section>
 
+    <!-- Glossary Section -->
+    <section id="glossary" class="py-20 px-6">
+        <div class="max-w-6xl mx-auto">
+            <h2 class="text-3xl font-bold mb-10 text-center uppercase tracking-widest">Investment Glossary</h2>
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="glass-card p-6">
+                    <h3 class="font-bold text-blue-400 mb-2 flex items-center gap-2"><i data-lucide="help-circle" size="18"></i> NISA</h3>
+                    <p class="text-sm text-gray-400 leading-relaxed">少額投資非課税制度。通常、投資益には約20%の税金がかかりますが、NISA口座内での利益はすべて非課税となります。2024年から大幅に枠が拡大されました。</p>
+                </div>
+                <div class="glass-card p-6">
+                    <h3 class="font-bold text-blue-400 mb-2 flex items-center gap-2"><i data-lucide="help-circle" size="18"></i> Fear & Greed Index</h3>
+                    <p class="text-sm text-gray-400 leading-relaxed">投資家の心理を「恐怖(0)」から「強欲(100)」の間で数値化した指標。数値が低いほど絶望的（買い時）、高いほど過熱気味（売り時）と判断されます。</p>
+                </div>
+                <div class="glass-card p-6">
+                    <h3 class="font-bold text-blue-400 mb-2 flex items-center gap-2"><i data-lucide="help-circle" size="18"></i> 配当利回り</h3>
+                    <p class="text-sm text-gray-400 leading-relaxed">投資した金額に対して、1年間でどれだけの配当金を受け取れるかを示す指標。一般的に3〜4%以上が高配当銘柄と呼ばれます。</p>
+                </div>
+                <div class="glass-card p-6">
+                    <h3 class="font-bold text-blue-400 mb-2 flex items-center gap-2"><i data-lucide="help-circle" size="18"></i> 投資信託</h3>
+                    <p class="text-sm text-gray-400 leading-relaxed">多くの投資家から集めた資金を、運用のプロが一括して株式や債券に投資する商品。少額から分散投資ができるのが最大の特徴です。</p>
+                </div>
+                <div class="glass-card p-6">
+                    <h3 class="font-bold text-blue-400 mb-2 flex items-center gap-2"><i data-lucide="help-circle" size="18"></i> 株主優待</h3>
+                    <p class="text-sm text-gray-400 leading-relaxed">企業が株主に対して、自社製品やサービス券、特産品などを贈る日本独自の制度。配当とは別の投資還元として人気があります。</p>
+                </div>
+                <div class="glass-card p-6">
+                    <h3 class="font-bold text-blue-400 mb-2 flex items-center gap-2"><i data-lucide="help-circle" size="18"></i> ドル円為替</h3>
+                    <p class="text-sm text-gray-400 leading-relaxed">日本円と米ドルの交換比率。円安は輸出企業（トヨタ等）に有利、円高は輸入企業や米国株投資家に有利に働きます。</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="py-12 text-center text-[10px] text-gray-600 uppercase tracking-widest border-t border-white/5">
+        <p>© 2026 NextInvest AI. Real-time insights for your financial future.</p>
+    </footer>
+
     <script>
         // API Proxy Call
         async function fetchAPI(payload) {
@@ -140,13 +216,14 @@
             if (loadingEl) loadingEl.classList.remove('hidden');
             try {
                 const data = await fetchAPI({ type: 'market_data' });
-                document.getElementById('fg-value').innerText = data.fgValue;
-                document.getElementById('fg-label').innerText = data.fgLabel;
-                document.getElementById('fg-fill').style.transform = `rotate(${(data.fgValue/100)*180+45}deg)`;
-                document.getElementById('fx-rate').innerText = data.usdjpy;
-                document.getElementById('fx-change').innerText = data.usdjpyChange;
-                document.getElementById('idx-sp500').innerText = data.sp500;
-                document.getElementById('idx-nikkei').innerText = data.nikkei;
+                document.getElementById('fg-value').innerText = data.fgValue || '--';
+                document.getElementById('fg-label').innerText = data.fgLabel || 'Unknown';
+                const rotation = data.fgValue ? (data.fgValue/100)*180+45 : 45;
+                document.getElementById('fg-fill').style.transform = `rotate(${rotation}deg)`;
+                document.getElementById('fx-rate').innerText = data.usdjpy || '---.--';
+                document.getElementById('fx-change').innerText = data.usdjpyChange || '--.--';
+                document.getElementById('idx-sp500').innerText = data.sp500 || '----.--';
+                document.getElementById('idx-nikkei').innerText = data.nikkei || '----.--';
                 document.getElementById('update-time').innerText = new Date().toLocaleTimeString();
             } catch (e) {
                 document.getElementById('fg-label').innerText = "Fetch Error";
@@ -156,19 +233,27 @@
         }
 
         let currentTab = 'us';
-        function switchTab(t) { currentTab = t; document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active')); document.getElementById(`tab-${t}`).classList.add('active'); }
+        function switchTab(t) { 
+            currentTab = t; 
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active')); 
+            document.getElementById(`tab-${t}`).classList.add('active'); 
+            const input = document.getElementById('stock-input');
+            if (t === 'us') input.placeholder = "例: NVDA, Apple, Tesla...";
+            else if (t === 'jp') input.placeholder = "例: 7203, トヨタ, 銘柄番号...";
+            else input.placeholder = "例: eMAXIS Slim, オルカン...";
+        }
 
         async function runAnalysis() {
             const query = document.getElementById('stock-input').value;
             if (!query) return;
             const resDiv = document.getElementById('analysis-result');
-            resDiv.innerHTML = `<div class="animate-spin h-8 w-8 border-t-2 border-blue-500 rounded-full mb-4"></div><p>分析中...</p>`;
+            resDiv.innerHTML = `<div class="animate-spin h-8 w-8 border-t-2 border-blue-500 rounded-full mb-4"></div><p>最新の市場環境と併せて解析中...</p>`;
             
             const prompt = currentTab === 'us' ? "米国株現状分析と見通し。" : currentTab === 'jp' ? "日本株の利回り・優待・見通し。" : "投資信託の評価。";
 
             try {
                 const data = await fetchAPI({ type: 'analysis', query, prompt });
-                resDiv.innerHTML = `<div class="w-full text-left p-6 leading-relaxed fade-in text-sm">${data.text}</div>`;
+                resDiv.innerHTML = `<div class="w-full text-left p-6 leading-relaxed fade-in text-sm text-gray-200">${data.text}</div>`;
                 if (typeof lucide !== 'undefined') lucide.createIcons();
             } catch (e) {
                 resDiv.innerHTML = `<p class="text-red-400">エラーが発生しました。Vercelの環境変数を確認してください。</p>`;
@@ -179,8 +264,21 @@
         let nisaChart;
         function initChart() {
             const ctx = document.getElementById('nisaChart').getContext('2d');
-            nisaChart = new Chart(ctx, { type: 'bar', data: { labels: [], datasets: [ { label: '元本', data: [], backgroundColor: '#2563eb', stack: '1' }, { label: '利益', data: [], backgroundColor: '#10b981', stack: '1' } ] }, options: { responsive: true, maintainAspectRatio: false, scales: { x: { ticks: { color: '#555' } }, y: { ticks: { color: '#555' } } }, plugins: { legend: { display: false } } } });
+            nisaChart = new Chart(ctx, { 
+                type: 'bar', 
+                data: { labels: [], datasets: [ { label: '元本', data: [], backgroundColor: '#2563eb', stack: '1' }, { label: '利益', data: [], backgroundColor: '#10b981', stack: '1' } ] }, 
+                options: { 
+                    responsive: true, 
+                    maintainAspectRatio: false, 
+                    scales: { 
+                        x: { grid: { display: false }, ticks: { color: '#555' } }, 
+                        y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#555', callback: v => (v/10000)+'万' } } 
+                    }, 
+                    plugins: { legend: { display: false } } 
+                } 
+            });
         }
+
         function updateSim() {
             const m = parseInt(document.getElementById('input-monthly').value) * 10000;
             const r = parseFloat(document.getElementById('input-rate').value) / 100 / 12;
@@ -189,8 +287,16 @@
             document.getElementById('val-rate').innerText = document.getElementById('input-rate').value;
             document.getElementById('val-years').innerText = y;
             let labels = [], pArr = [], rArr = [], total = 0, pTotal = 0;
-            for(let i=1; i<=y; i++) { labels.push(i+'Y'); for(let j=0; j<12; j++) { total = (total + m) * (1 + r); pTotal += m; } pArr.push(pTotal); rArr.push(total - pTotal); }
-            nisaChart.data.labels = labels; nisaChart.data.datasets[0].data = pArr; nisaChart.data.datasets[1].data = rArr; nisaChart.update();
+            for(let i=1; i<=y; i++) { 
+                labels.push(i+'Y'); 
+                for(let j=0; j<12; j++) { total = (total + m) * (1 + r); pTotal += m; } 
+                pArr.push(pTotal); 
+                rArr.push(Math.max(0, total - pTotal)); 
+            }
+            nisaChart.data.labels = labels; 
+            nisaChart.data.datasets[0].data = pArr; 
+            nisaChart.data.datasets[1].data = rArr; 
+            nisaChart.update();
             document.getElementById('val-total').innerText = Math.round(total).toLocaleString()+'円';
             document.getElementById('val-profit').innerText = '+'+Math.round(total-pTotal).toLocaleString()+'円 益';
         }
@@ -210,9 +316,7 @@
         }
 
         window.onload = () => { 
-            if (typeof lucide !== 'undefined') {
-                lucide.createIcons(); 
-            }
+            if (typeof lucide !== 'undefined') lucide.createIcons(); 
             initThree(); 
             initChart(); 
             updateSim(); 

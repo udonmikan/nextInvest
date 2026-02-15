@@ -11,8 +11,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Noto+Sans+JP:wght@300;400;700&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Inter', 'Noto Sans JP', sans-serif; background-color: #050505; color: #ffffff; overflow-x: hidden; scroll-behavior: smooth; }
-        .glass-card { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 28px; }
-        .glass-card-hover:hover { transform: translateY(-5px); background: rgba(255, 255, 255, 0.06); transition: all 0.4s ease; }
+        .glass-card { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 28px; transition: all 0.4s ease; }
+        .glass-card-hover:hover { transform: translateY(-5px); background: rgba(255, 255, 255, 0.06); box-shadow: 0 10px 40px rgba(0,0,0,0.5); }
         #fluid-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; pointer-events: none; }
         .tab-btn.active { background: rgba(59, 130, 246, 0.2); border-color: rgba(59, 130, 246, 0.5); color: #60a5fa; }
         input[type="range"] { -webkit-appearance: none; width: 100%; height: 6px; background: rgba(255, 255, 255, 0.1); border-radius: 5px; outline: none; }
@@ -24,6 +24,7 @@
 <body>
     <canvas id="fluid-canvas"></canvas>
 
+    <!-- Navigation -->
     <nav class="fixed w-full z-50 px-6 py-4">
         <div class="max-w-7xl mx-auto flex justify-between items-center glass-card px-8 py-3 bg-black/20">
             <div class="text-2xl font-black flex items-center gap-2">
@@ -46,13 +47,13 @@
                 AIが導く、<br><span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-emerald-400">投資判断の極致。</span>
             </h1>
             <p class="text-xl text-gray-400 mb-12 max-w-2xl mx-auto">
-                最新の市場データをAIが即時解析。高配当ランキングから今月の優待、個別銘柄分析まで、すべてをこの一つに。
+                最新の市場データをAIが即時解析。高配当ランキング10、今月の優待、個別銘柄分析まで、すべてをこのコンソール一つに統合。
             </p>
             <a href="#analysis" class="bg-blue-600 px-10 py-5 rounded-full font-bold hover:bg-blue-500 transition shadow-lg shadow-blue-500/20 text-lg">分析ツールを使ってみる</a>
         </div>
     </section>
 
-    <!-- AI Analysis Section (Integrated Tabs) -->
+    <!-- AI Analysis Section -->
     <section id="analysis" class="py-20 px-6">
         <div class="max-w-6xl mx-auto">
             <h2 class="text-3xl font-bold mb-10 flex items-center gap-3">
@@ -66,19 +67,19 @@
                     <button onclick="switchTab('jp')" id="tab-jp" class="tab-btn p-5 glass-card text-left flex items-center gap-4 transition"><i data-lucide="flag"></i>日本個別株</button>
                     <button onclick="switchTab('fund')" id="tab-fund" class="tab-btn p-5 glass-card text-left flex items-center gap-4 transition"><i data-lucide="layers"></i>投資信託</button>
                     <div class="h-px bg-white/10 my-4"></div>
-                    <button onclick="switchTab('dividend')" id="tab-dividend" class="tab-btn p-5 glass-card text-left flex items-center gap-4 transition border-emerald-500/30"><i data-lucide="award" class="text-emerald-400"></i>高配当TOP10</button>
+                    <button onclick="switchTab('dividend')" id="tab-dividend" class="tab-btn p-5 glass-card text-left flex items-center gap-4 transition border-emerald-500/30"><i data-lucide="award" class="text-emerald-400"></i>高配当利回りTOP10</button>
                     <button onclick="switchTab('yutai')" id="tab-yutai" class="tab-btn p-5 glass-card text-left flex items-center gap-4 transition border-pink-500/30"><i data-lucide="gift" class="text-pink-400"></i>今月の優待一覧</button>
                 </div>
 
-                <!-- Analysis Tool Content -->
+                <!-- Content Area -->
                 <div class="w-full lg:w-2/3 glass-card p-8">
                     <div id="input-area" class="relative mb-8">
                         <input id="stock-input" type="text" placeholder="銘柄を入力..." class="w-full bg-white/5 border border-white/10 rounded-2xl py-5 px-6 focus:ring-2 focus:ring-blue-500 text-xl font-light">
                         <button onclick="runAnalysis()" class="absolute right-3 top-3 bg-blue-600 hover:bg-blue-500 px-8 py-3 rounded-xl font-bold transition">分析実行</button>
                     </div>
                     
-                    <div id="analysis-result" class="min-h-[450px] flex flex-col items-center justify-center text-gray-500 border-2 border-dashed border-white/10 rounded-3xl overflow-auto">
-                        <p id="placeholder-text">分析ツールを選択、または銘柄を入力してください</p>
+                    <div id="analysis-result" class="min-h-[450px] flex flex-col items-center justify-center text-gray-200 border-2 border-dashed border-white/10 rounded-3xl overflow-auto p-4">
+                        <p id="placeholder-text" class="text-gray-500">分析ツールを選択、または銘柄を入力してください</p>
                     </div>
                 </div>
             </div>
@@ -88,7 +89,7 @@
     <!-- NISA Simulator -->
     <section id="nisa" class="py-20 px-6 bg-blue-950/20">
         <div class="max-w-6xl mx-auto">
-            <h2 class="text-4xl font-bold text-center mb-12">NISA 将来シミュレーター</h2>
+            <h2 class="text-4xl font-bold text-center mb-12">NISA 将来資産シミュレーター</h2>
             <div class="grid lg:grid-cols-5 gap-8">
                 <div class="lg:col-span-2 glass-card p-8 space-y-8">
                     <div><label class="text-sm text-gray-400">積立/月: <span id="val-monthly" class="text-blue-400">3</span>万</label><input type="range" id="input-monthly" min="1" max="30" value="3" class="mt-4 w-full"></div>
@@ -108,15 +109,15 @@
             <div class="grid md:grid-cols-3 gap-6">
                 <div class="glass-card p-6">
                     <h3 class="font-bold text-blue-400 mb-2">NISA</h3>
-                    <p class="text-sm text-gray-400">投資益が非課税になる国の制度。新NISAでは期間が無期限化されました。</p>
+                    <p class="text-sm text-gray-400">投資益が非課税になる国の制度。2024年の新NISAでは生涯非課税限度額が1,800万円まで拡大されました。</p>
                 </div>
                 <div class="glass-card p-6">
                     <h3 class="font-bold text-blue-400 mb-2">配当利回り</h3>
-                    <p class="text-sm text-gray-400">株価に対する年間配当金の割合。3%以上が一般的に高配当とされます。</p>
+                    <p class="text-sm text-gray-400">購入株価に対し、1年間でもらえる配当金の割合。高配当銘柄は長期保有に適しています。</p>
                 </div>
                 <div class="glass-card p-6">
                     <h3 class="font-bold text-blue-400 mb-2">権利確定日</h3>
-                    <p class="text-sm text-gray-400">配当や優待を受け取る権利が確定する日。その数営業日前までに購入が必要です。</p>
+                    <p class="text-sm text-gray-400">配当や優待を得る権利が決まる日。その2営業日前（権利付最終日）までに株を持つ必要があります。</p>
                 </div>
             </div>
         </div>
@@ -127,17 +128,77 @@
     </footer>
 
     <script>
-        // API Proxy
+        // API通信用関数
         async function fetchAPI(payload) {
             try {
+                // プレビュー環境やローカルホスト（デプロイ前）の判定
+                const isLocalOrPreview = window.location.protocol.startsWith('blob') || 
+                                       window.location.hostname === 'localhost' || 
+                                       window.location.hostname === '127.0.0.1' ||
+                                       window.location.hostname === '';
+
+                if (isLocalOrPreview) {
+                    // プレビュー環境向けのデモデータ（モック）を返す
+                    console.log("Preview Mode: Returning mock data.");
+                    await new Promise(r => setTimeout(r, 1000)); // 読み込み演出
+                    
+                    if (payload.type === 'dividend_ranking') {
+                        return { text: `
+                            <h3 class="text-xl font-bold mb-4 text-emerald-400">日本株 配当利回りランキング TOP10 (Demo)</h3>
+                            <table class="w-full text-left border-collapse">
+                                <thead>
+                                    <tr class="border-b border-white/10 text-gray-400 text-xs">
+                                        <th class="p-3">順位</th><th class="p-3">銘柄(コード)</th><th class="p-3">配当(予)</th><th class="p-3">利回り</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr class="border-b border-white/5">
+                                        <td class="p-3">1</td><td class="p-3">日本郵船 (9101)</td><td class="p-3">500円</td><td class="p-3 text-emerald-400 font-bold">14.2%</td>
+                                    </tr>
+                                    <tr class="border-b border-white/5">
+                                        <td class="p-3">2</td><td class="p-3">商船三井 (9104)</td><td class="p-3">450円</td><td class="p-3 text-emerald-400 font-bold">12.5%</td>
+                                    </tr>
+                                    <tr class="border-b border-white/5">
+                                        <td class="p-3">3</td><td class="p-3">JT (2914)</td><td class="p-3">194円</td><td class="p-3 text-emerald-400 font-bold">6.8%</td>
+                                    </tr>
+                                    <tr class="border-b border-white/5">
+                                        <td class="p-3">...</td><td class="p-3">ほか10位まで表示</td><td class="p-3">---</td><td class="p-3 text-emerald-400">---</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <p class="mt-4 text-[10px] text-gray-500">※Vercelにデプロイすると実際のAI解析データが表示されます。</p>`
+                        };
+                    } else if (payload.type === 'yutai_list') {
+                        return { text: `
+                            <h3 class="text-xl font-bold mb-4 text-pink-400">今月の注目株主優待銘柄 (Demo)</h3>
+                            <div class="space-y-4">
+                                <div class="p-4 glass-card border-l-4 border-pink-500">
+                                    <div class="font-bold">イオン (8267)</div>
+                                    <div class="text-sm text-gray-300">優待：キャッシュバック(3%〜)付オーナーズカード</div>
+                                    <div class="text-[10px] text-gray-500">権利確定日：月末</div>
+                                </div>
+                                <div class="p-4 glass-card border-l-4 border-pink-500">
+                                    <div class="font-bold">吉野家HD (9861)</div>
+                                    <div class="text-sm text-gray-300">優待：飲食優待券(2,000円相当〜)</div>
+                                    <div class="text-[10px] text-gray-500">権利確定日：月末</div>
+                                </div>
+                            </div>
+                            <p class="mt-4 text-[10px] text-gray-500">※Vercelにデプロイすると最新の優待情報が表示されます。</p>`
+                        };
+                    }
+                    return { text: "※プレビュー環境です。Vercelデプロイ後に実際のAI分析結果が表示されます。" };
+                }
+
+                // 本番環境（Vercel）での通信
                 const res = await fetch('/api/analyze', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
                 });
+
                 if (!res.ok) {
-                    const err = await res.json();
-                    throw new Error(err.error || 'API Error');
+                    const errData = await res.json().catch(() => ({}));
+                    throw new Error(errData.error || `サーバーエラー (HTTP ${res.status})`);
                 }
                 return await res.json();
             } catch (error) {
@@ -157,7 +218,6 @@
             const resDiv = document.getElementById('analysis-result');
             const input = document.getElementById('stock-input');
 
-            // 特殊タブ（ランキング・優待）の場合は入力を隠して即時実行
             if (t === 'dividend' || t === 'yutai') {
                 inputArea.classList.add('hidden');
                 runAnalysis();
@@ -166,7 +226,7 @@
                 if (t === 'us') input.placeholder = "例: NVDA, Apple, Tesla...";
                 else if (t === 'jp') input.placeholder = "例: 7203, トヨタ, 銘柄番号...";
                 else input.placeholder = "例: eMAXIS Slim, オルカン...";
-                resDiv.innerHTML = '<p>分析対象を入力して実行ボタンを押してください</p>';
+                resDiv.innerHTML = '<p class="text-gray-500">分析対象を入力して実行ボタンを押してください</p>';
             }
         }
 
@@ -174,33 +234,46 @@
             const query = document.getElementById('stock-input').value;
             const resDiv = document.getElementById('analysis-result');
             
-            resDiv.innerHTML = `<div class="animate-spin h-10 w-10 border-t-2 border-blue-500 rounded-full mb-4"></div><p>最新情報を取得・解析中...</p>`;
+            resDiv.innerHTML = `<div class="animate-spin h-10 w-10 border-t-2 border-blue-500 rounded-full mb-4"></div><p>AIが最新データを取得・解析中...</p>`;
 
             let payload = { type: 'analysis', query: query };
 
             if (currentTab === 'dividend') {
-                payload = { type: 'dividend_ranking' };
+                payload = { 
+                    type: 'dividend_ranking',
+                    prompt: "今日現在の日本株高配当利回りランキング上位10位を調査し、順位、銘柄名(コード)、配当金(予想)、配当利回りをHTMLのテーブル形式で出力してください。"
+                };
             } else if (currentTab === 'yutai') {
-                payload = { type: 'yutai_list' };
+                payload = { 
+                    type: 'yutai_list',
+                    prompt: "今月が権利確定月となっている、日本株の注目株主優待銘柄をリストアップし、HTML形式で出力してください。"
+                };
             } else {
                 if (!query) {
-                    resDiv.innerHTML = '<p class="text-red-400">銘柄名を入力してください</p>';
+                    resDiv.innerHTML = '<p class="text-red-400">銘柄名またはコードを入力してください</p>';
                     return;
                 }
                 const promptMap = {
-                    us: "米国株の現状と見通し。ドル円影響も含めて。",
-                    jp: "日本株の財務・配当・見通しを詳しく。",
-                    fund: "投資信託の構成銘柄と利回り、リスク分析。"
+                    us: "米国株の現状と今後の見通し。最新の為替動向も含めて解説してください。",
+                    jp: "日本株の直近の業績、配当状況、テクニカル的な見通しを解説してください。",
+                    fund: "この投資信託の純資産推移、主な組み入れ銘柄、投資判断について解説してください。"
                 };
                 payload.prompt = promptMap[currentTab];
             }
 
             try {
                 const data = await fetchAPI(payload);
-                resDiv.innerHTML = `<div class="w-full text-left p-6 leading-relaxed fade-in text-sm text-gray-200">${data.text}</div>`;
+                resDiv.innerHTML = `<div class="w-full text-left p-2 leading-relaxed fade-in text-sm text-gray-200 prose prose-invert max-w-none">${data.text || '解析結果がありません'}</div>`;
                 if (typeof lucide !== 'undefined') lucide.createIcons();
             } catch (e) {
-                resDiv.innerHTML = `<p class="text-red-400">取得に失敗しました。Vercel環境変数を確認してください。<br><small>${e.message}</small></p>`;
+                resDiv.innerHTML = `
+                    <div class="text-center p-6">
+                        <i data-lucide="alert-circle" class="text-red-400 mx-auto mb-4" size="48"></i>
+                        <p class="text-red-400 font-bold mb-2">通信に失敗しました</p>
+                        <p class="text-xs text-gray-500 leading-relaxed">${e.message}<br><br>Vercelにデプロイし、環境変数が設定されているか確認してください。</p>
+                    </div>
+                `;
+                if (typeof lucide !== 'undefined') lucide.createIcons();
             }
         }
 
@@ -217,12 +290,19 @@
         }
 
         function updateSim() {
-            const m = parseInt(document.getElementById('input-monthly').value) * 10000;
-            const r = parseFloat(document.getElementById('input-rate').value) / 100 / 12;
-            const y = parseInt(document.getElementById('input-years').value);
-            document.getElementById('val-monthly').innerText = document.getElementById('input-monthly').value;
-            document.getElementById('val-rate').innerText = document.getElementById('input-rate').value;
+            const mInput = document.getElementById('input-monthly');
+            const rInput = document.getElementById('input-rate');
+            const yInput = document.getElementById('input-years');
+            if (!mInput || !rInput || !yInput) return;
+
+            const m = parseInt(mInput.value) * 10000;
+            const r = parseFloat(rInput.value) / 100 / 12;
+            const y = parseInt(yInput.value);
+
+            document.getElementById('val-monthly').innerText = mInput.value;
+            document.getElementById('val-rate').innerText = rInput.value;
             document.getElementById('val-years').innerText = y;
+
             let labels = [], pArr = [], rArr = [], total = 0, pTotal = 0;
             for(let i=1; i<=y; i++) { 
                 labels.push(i+'Y'); 
@@ -243,7 +323,7 @@
             const scene = new THREE.Scene();
             const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
             const uniforms = { u_time: { value: 0 }, u_mouse: { value: new THREE.Vector2(0,0) }, u_resolution: { value: new THREE.Vector2(window.innerWidth, window.innerHeight) } };
-            const material = new THREE.ShaderMaterial({ uniforms, fragmentShader: `uniform float u_time; uniform vec2 u_mouse; uniform vec2 u_resolution; void main() { vec2 uv = gl_FragCoord.xy / u_resolution.xy; float d = distance(uv, u_mouse/u_resolution.xy); vec3 c1 = vec3(0.01, 0.04, 0.08); vec3 c2 = vec3(0.0, 0.35, 0.7); float r = smoothstep(0.7, 0.0, d) * 0.45; gl_FragColor = vec4(mix(c1, c2, r + sin(u_time*0.5+uv.x*3.0)*0.03), 1.0); }` });
+            const material = new THREE.ShaderMaterial({ uniforms, fragmentShader: `uniform float u_time; uniform vec2 u_mouse; uniform vec2 u_resolution; void main() { vec2 uv = gl_FragCoord.xy / u_resolution.xy; float d = distance(uv, u_mouse/u_resolution.xy); vec3 c1 = vec3(0.01, 0.04, 0.08); vec3 c2 = vec3(0.0, 0.35, 0.7); float r = smoothstep(0.7, 0.0, d) * 0.45; gl_FragColor = vec4(mix(c1, c2, r + sin(u_time*0.5+uv.x*4.0)*0.03), 1.0); }` });
             scene.add(new THREE.Mesh(new THREE.PlaneGeometry(2,2), material));
             window.addEventListener('mousemove', e => uniforms.u_mouse.value.set(e.clientX, window.innerHeight - e.clientY));
             function animate(t) { uniforms.u_time.value = t*0.001; renderer.render(scene, camera); requestAnimationFrame(animate); }
@@ -253,7 +333,10 @@
         window.onload = () => { 
             if (typeof lucide !== 'undefined') lucide.createIcons(); 
             initThree(); initChart(); updateSim();
-            ['monthly', 'rate', 'years'].forEach(id => document.getElementById('input-'+id).addEventListener('input', updateSim));
+            ['monthly', 'rate', 'years'].forEach(id => {
+                const el = document.getElementById('input-'+id);
+                if (el) el.addEventListener('input', updateSim);
+            });
         };
     </script>
 </body>

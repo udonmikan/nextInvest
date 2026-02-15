@@ -43,19 +43,23 @@ export default async function handler(req, res) {
                     "nikkei": "現在の数値"
                 }
             `;
-            userMessage = "今日のFear & Greed Index、ドル円為替、S&P500、日経平均の最新値を教えてください。";
+            userMessage = "今日の市場の主要指標を教えてください。";
             isJsonResponse = true;
-        } else if (type === 'ranking') {
+        } else if (type === 'dividend_ranking') {
             systemInstruction = `
-                今日現在の日本株高配当利回りランキング上位3位を調査し、必ず以下のHTML形式（glass-cardクラスを使用）のみで出力してください。Markdownタグ( \`\`\`html )などは含めないでください。
-                <div class="glass-card p-8 relative overflow-hidden">
-                    <div class="text-blue-400 font-bold mb-2">RANK #順位</div>
-                    <h3 class="text-xl font-bold mb-1">銘柄名</h3>
-                    <p class="text-sm text-gray-400 mb-4">企業の特徴解説</p>
-                    <div class="text-2xl font-black text-emerald-400">利回り 0.0%</div>
-                </div>
+                現在、日本株で配当利回りが高い銘柄の上位10社を調査してください。
+                結果は必ず、見やすいHTMLテーブル形式（<table>タグ）で出力してください。
+                各行には「順位」「銘柄名・コード」「1株配当(予想)」「配当利回り」を含めてください。
+                スタイルはTailwind CSSのクラス（例: text-left, p-3, border-b border-white/10など）を使用して装飾してください。
             `;
-            userMessage = "日本株の高配当ランキング上位3位を教えて。";
+            userMessage = "最新の日本株高配当ランキングTOP10を作成してください。";
+        } else if (type === 'yutai_list') {
+            systemInstruction = `
+                今月（現在の日付に基づいた月）が権利確定月となっている、日本株の人気株主優待銘柄を調査してください。
+                結果は、銘柄名、優待内容、権利確定日がわかるように、HTMLのリスト形式（またはグリッド形式）で出力してください。
+                各銘柄を <div class="p-4 border-b border-white/5"> で囲み、魅力的な装飾を施してください。
+            `;
+            userMessage = "今月の株主優待銘柄一覧を教えてください。";
         } else {
             systemInstruction = systemPrompt || "プロの投資アナリストとして、最新のニュースを基に日本語で詳しく回答してください。";
             userMessage = query ? `分析対象: ${query}` : "現在の市場トレンドについて教えてください。";
@@ -88,18 +92,15 @@ export default async function handler(req, res) {
 
         let resultText = apiData.candidates?.[0]?.content?.parts?.[0]?.text || "";
 
-        // 6. レスポンスのクリーンアップ（AIがMarkdownで出力してしまった場合の対策）
-        // 特にHTMLやJSONを期待する場合に不要な装飾を除去する
+        // 6. レスポンスのクリーンアップ
         resultText = resultText.replace(/```[a-z]*\n?/gi, '').replace(/```/g, '').trim();
 
         if (isJsonResponse) {
             try {
-                // JSONとしてパースできるか確認
                 const jsonResult = JSON.parse(resultText);
                 res.status(200).json(jsonResult);
             } catch (e) {
-                console.error("JSON Parse Error from AI response:", resultText);
-                res.status(500).json({ error: 'AIから取得したデータの解析に失敗しました。' });
+                res.status(500).json({ error: 'データの解析に失敗しました。' });
             }
         } else {
             res.status(200).json({ text: resultText });

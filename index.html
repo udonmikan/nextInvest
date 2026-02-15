@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NextInvest AI - リアルタイム市場分析プラットフォーム</title>
+    <title>NextInvest AI - リアルタイム投資分析</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -12,7 +12,7 @@
     <style>
         body { font-family: 'Inter', 'Noto Sans JP', sans-serif; background-color: #050505; color: #ffffff; overflow-x: hidden; scroll-behavior: smooth; }
         .glass-card { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 28px; }
-        .glass-card-hover:hover { transform: translateY(-5px); background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(255, 255, 255, 0.2); transition: all 0.4s ease; }
+        .glass-card-hover:hover { transform: translateY(-5px); background: rgba(255, 255, 255, 0.06); transition: all 0.4s ease; }
         #fluid-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; pointer-events: none; }
         .gauge-container { position: relative; width: 180px; height: 90px; overflow: hidden; }
         .gauge-bg { width: 180px; height: 180px; border-radius: 50%; border: 12px solid rgba(255,255,255,0.05); border-bottom-color: transparent; border-left-color: transparent; transform: rotate(-45deg); }
@@ -27,40 +27,35 @@
 <body>
     <canvas id="fluid-canvas"></canvas>
 
+    <!-- Navigation -->
     <nav class="fixed w-full z-50 px-6 py-4">
         <div class="max-w-7xl mx-auto flex justify-between items-center glass-card px-8 py-3 bg-black/20">
             <div class="text-2xl font-black flex items-center gap-2">
-                <i data-lucide="zap" class="text-blue-400 fill-blue-400"></i>
-                NEXTINVEST <span class="text-blue-400">AI</span>
+                <i data-lucide="zap" class="text-blue-400 fill-blue-400"></i> NEXTINVEST AI
             </div>
             <div class="hidden md:flex gap-8 text-xs font-medium uppercase tracking-widest">
-                <a href="#market" class="hover:text-blue-300 transition">Market</a>
-                <a href="#analysis" class="hover:text-blue-300 transition">Analytics</a>
-                <a href="#nisa" class="hover:text-blue-300 transition">NISA</a>
-                <a href="#glossary" class="hover:text-blue-300 transition">Glossary</a>
+                <a href="#market" class="hover:text-blue-300">Market</a>
+                <a href="#analysis" class="hover:text-blue-300">Analytics</a>
+                <a href="#nisa" class="hover:text-blue-300">NISA</a>
             </div>
-            <button class="bg-blue-600 text-white px-6 py-2 rounded-full font-bold text-sm hover:bg-blue-500 transition">START NOW</button>
+            <button class="bg-blue-600 text-white px-6 py-2 rounded-full font-bold text-sm">LIVE</button>
         </div>
     </nav>
 
-    <!-- Market Dashboard -->
+    <!-- Hero / Dashboard -->
     <section id="market" class="relative pt-40 pb-20 px-6">
         <div class="max-w-6xl mx-auto grid lg:grid-cols-2 gap-16 items-center">
             <div>
-                <h1 class="text-5xl md:text-7xl font-extrabold mb-8 leading-tight">AIが導く、<br><span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-emerald-400">投資の新常識。</span></h1>
-                <p class="text-xl text-gray-400 mb-12">最新の市場動向をAIがリアルタイムに取得。あなたの資産運用を強力にバックアップします。</p>
+                <h1 class="text-5xl md:text-7xl font-extrabold mb-8 leading-tight">市場の「今」を<br><span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-emerald-400">AIが即時解析。</span></h1>
+                <p class="text-xl text-gray-400 mb-12">最新の Fear & Greed Index や為替変動をダッシュボードに反映。</p>
                 <div class="flex gap-4">
-                    <a href="#analysis" class="bg-blue-600 px-8 py-4 rounded-full font-bold hover:bg-blue-500 transition">分析を試す</a>
-                    <a href="#nisa" class="glass-card px-8 py-4 rounded-full font-bold hover:bg-white/10 transition">NISAシミュレーター</a>
+                    <a href="#analysis" class="bg-blue-600 px-8 py-4 rounded-full font-bold hover:bg-blue-500 transition">AI分析を開始</a>
                 </div>
             </div>
 
             <div class="grid grid-cols-2 gap-4">
-                <!-- Fear & Greed -->
                 <div class="glass-card p-6 flex flex-col items-center justify-center text-center">
-                    <div class="text-[10px] font-bold text-gray-500 mb-4 uppercase flex items-center gap-2">
-                        Fear & Greed Index <span id="fg-loading" class="w-2 h-2 bg-blue-500 rounded-full animate-ping"></span>
-                    </div>
+                    <div class="text-[10px] font-bold text-gray-500 mb-4 uppercase">Fear & Greed Index <span id="fg-loading" class="w-2 h-2 bg-blue-500 rounded-full animate-ping hidden"></span></div>
                     <div class="gauge-container">
                         <div class="gauge-bg"></div>
                         <div id="fg-fill" class="gauge-fill" style="transform: rotate(45deg);"></div>
@@ -70,92 +65,57 @@
                         </div>
                     </div>
                 </div>
-                <!-- FX -->
                 <div class="glass-card p-6 flex flex-col justify-between">
                     <div>
                         <div class="text-[10px] font-bold text-gray-500 mb-1 uppercase">USD / JPY</div>
-                        <div class="text-4xl font-black mb-1" id="fx-rate">---.--</div>
-                        <div class="text-xs font-bold" id="fx-change">--.-- (--%)</div>
+                        <div class="text-3xl font-black mb-1" id="fx-rate">---.--</div>
+                        <div class="text-xs font-bold" id="fx-change">--.--</div>
                     </div>
-                    <div class="mt-4 pt-4 border-t border-white/5 flex justify-between items-center">
-                        <span class="text-[10px] text-gray-500 uppercase">Live</span>
-                        <span class="text-[10px] font-medium" id="update-time">--:--:--</span>
-                    </div>
+                    <div class="mt-4 pt-4 border-t border-white/5 text-[10px] text-gray-500" id="update-time">--:--:--</div>
                 </div>
-                <!-- Indices -->
                 <div class="glass-card p-6 col-span-2 flex items-center justify-between">
                     <div class="flex gap-8">
-                        <div>
-                            <div class="text-[10px] font-bold text-gray-500 uppercase">S&P 500</div>
-                            <div class="text-xl font-black" id="idx-sp500">----.--</div>
-                        </div>
-                        <div>
-                            <div class="text-[10px] font-bold text-gray-500 uppercase">Nikkei 225</div>
-                            <div class="text-xl font-black" id="idx-nikkei">----.--</div>
-                        </div>
+                        <div><div class="text-[10px] font-bold text-gray-500 uppercase">S&P 500</div><div class="text-xl font-black" id="idx-sp500">----.--</div></div>
+                        <div><div class="text-[10px] font-bold text-gray-500 uppercase">Nikkei 225</div><div class="text-xl font-black" id="idx-nikkei">----.--</div></div>
                     </div>
-                    <div class="text-blue-400"><i data-lucide="refresh-cw" size="18" class="animate-spin-slow cursor-pointer" onclick="fetchMarketData()"></i></div>
+                    <button onclick="fetchMarketData()" class="text-blue-400 hover:scale-110 transition"><i data-lucide="refresh-cw" size="20"></i></button>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- AI Analysis -->
+    <!-- Analysis -->
     <section id="analysis" class="py-20 px-6">
         <div class="max-w-6xl mx-auto">
             <div class="flex flex-col lg:flex-row gap-8">
                 <div class="w-full lg:w-1/3 flex flex-col gap-3">
-                    <h2 class="text-3xl font-bold mb-4">AI銘柄分析</h2>
-                    <button onclick="switchTab('us')" id="tab-us" class="tab-btn active p-5 glass-card text-left glass-card-hover flex items-center gap-4">
-                        <i data-lucide="globe"></i><div><b>米国個別株</b><p class="text-[10px] opacity-60">US Stocks & FX</p></div>
-                    </button>
-                    <button onclick="switchTab('jp')" id="tab-jp" class="tab-btn p-5 glass-card text-left glass-card-hover flex items-center gap-4">
-                        <i data-lucide="flag"></i><div><b>日本個別株</b><p class="text-[10px] opacity-60">JP Stocks & Dividends</p></div>
-                    </button>
-                    <button onclick="switchTab('fund')" id="tab-fund" class="tab-btn p-5 glass-card text-left glass-card-hover flex items-center gap-4">
-                        <i data-lucide="layers"></i><div><b>投資信託</b><p class="text-[10px] opacity-60">Mutual Funds</p></div>
-                    </button>
+                    <h2 class="text-3xl font-bold mb-4">AI分析ツール</h2>
+                    <button onclick="switchTab('us')" id="tab-us" class="tab-btn active p-5 glass-card text-left flex items-center gap-4"><i data-lucide="globe"></i>米国株</button>
+                    <button onclick="switchTab('jp')" id="tab-jp" class="tab-btn p-5 glass-card text-left flex items-center gap-4"><i data-lucide="flag"></i>日本株</button>
+                    <button onclick="switchTab('fund')" id="tab-fund" class="tab-btn p-5 glass-card text-left flex items-center gap-4"><i data-lucide="layers"></i>投資信託</button>
                 </div>
                 <div class="w-full lg:w-2/3 glass-card p-8">
                     <div class="relative mb-8">
-                        <input id="stock-input" type="text" placeholder="銘柄名やコードを入力..." class="w-full bg-white/5 border border-white/10 rounded-2xl py-5 px-6 focus:ring-2 focus:ring-blue-500 text-xl font-light">
-                        <button onclick="runAnalysis()" class="absolute right-3 top-3 bg-blue-600 px-8 py-3 rounded-xl font-bold hover:bg-blue-500 transition">分析</button>
+                        <input id="stock-input" type="text" placeholder="銘柄を入力..." class="w-full bg-white/5 border border-white/10 rounded-2xl py-5 px-6 focus:ring-2 focus:ring-blue-500 text-xl font-light">
+                        <button onclick="runAnalysis()" class="absolute right-3 top-3 bg-blue-600 px-8 py-3 rounded-xl font-bold hover:bg-blue-500">分析実行</button>
                     </div>
-                    <div id="analysis-result" class="min-h-[400px] flex flex-col items-center justify-center text-gray-500 border-2 border-dashed border-white/10 rounded-3xl">
-                        <i data-lucide="cpu" size="48" class="mb-4 opacity-10"></i><p>分析対象を入力してください</p>
+                    <div id="analysis-result" class="min-h-[300px] flex flex-col items-center justify-center text-gray-500 border-2 border-dashed border-white/10 rounded-3xl">
+                        <p>分析対象を入力してください</p>
                     </div>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Rankings -->
-    <section class="py-20 px-6">
-        <div class="max-w-6xl mx-auto">
-            <h2 class="text-3xl font-bold mb-8 flex items-center gap-3"><i data-lucide="award"></i>日本株 AI注目ランキング</h2>
-            <div class="grid md:grid-cols-3 gap-6">
-                <div class="glass-card p-6 glass-card-hover">
-                    <span class="text-blue-400 font-bold">#1</span><h3 class="font-bold">9101 日本郵船</h3><p class="text-xs text-gray-400">配当利回り: 14.5%</p>
-                </div>
-                <div class="glass-card p-6 glass-card-hover">
-                    <span class="text-blue-400 font-bold">#2</span><h3 class="font-bold">2914 JT</h3><p class="text-xs text-gray-400">配当利回り: 6.8%</p>
-                </div>
-                <div class="glass-card p-6 glass-card-hover">
-                    <span class="text-blue-400 font-bold">#3</span><h3 class="font-bold">8591 オリックス</h3><p class="text-xs text-gray-400">優待・配当評価: A</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- NISA -->
+    <!-- Simulator -->
     <section id="nisa" class="py-20 px-6 bg-blue-950/20">
         <div class="max-w-6xl mx-auto">
-            <h2 class="text-4xl font-bold text-center mb-12">NISA 将来資産シミュレーター</h2>
+            <h2 class="text-4xl font-bold text-center mb-12">NISA 将来シミュレーター</h2>
             <div class="grid lg:grid-cols-5 gap-8">
                 <div class="lg:col-span-2 glass-card p-8 space-y-8">
-                    <div><label class="text-sm text-gray-400 uppercase">毎月の積立: <span id="val-monthly" class="text-blue-400">3</span>万円</label><input type="range" id="input-monthly" min="1" max="30" value="3" class="mt-4"></div>
-                    <div><label class="text-sm text-gray-400 uppercase">想定利回り: <span id="val-rate" class="text-emerald-400">5</span>%</label><input type="range" id="input-rate" min="0.1" max="15" value="5" step="0.1" class="mt-4"></div>
-                    <div><label class="text-sm text-gray-400 uppercase">積立期間: <span id="val-years" class="text-purple-400">20</span>年</label><input type="range" id="input-years" min="1" max="40" value="20" class="mt-4"></div>
+                    <div><label class="text-sm text-gray-400">積立/月: <span id="val-monthly" class="text-blue-400">3</span>万</label><input type="range" id="input-monthly" min="1" max="30" value="3" class="mt-4"></div>
+                    <div><label class="text-sm text-gray-400">利回り: <span id="val-rate" class="text-emerald-400">5</span>%</label><input type="range" id="input-rate" min="0.1" max="15" value="5" step="0.1" class="mt-4"></div>
+                    <div><label class="text-sm text-gray-400">期間: <span id="val-years" class="text-purple-400">20</span>年</label><input type="range" id="input-years" min="1" max="40" value="20" class="mt-4"></div>
                     <div class="pt-8 border-t border-white/10"><div class="text-4xl font-black" id="val-total">0円</div><p class="text-emerald-400 font-bold text-sm" id="val-profit">+0円 益</p></div>
                 </div>
                 <div class="lg:col-span-3 glass-card p-8 min-h-[400px]"><canvas id="nisaChart"></canvas></div>
@@ -163,102 +123,63 @@
         </div>
     </section>
 
-    <!-- Glossary -->
-    <section id="glossary" class="py-20 px-6">
-        <div class="max-w-6xl mx-auto">
-            <h2 class="text-3xl font-bold mb-10 text-center">株式投資用語集</h2>
-            <div class="grid md:grid-cols-3 gap-6">
-                <div class="glass-card p-6"><h4 class="font-bold text-blue-400 mb-2">Fear & Greed Index</h4><p class="text-xs text-gray-400">投資家心理を0〜100で数値化した指標。低いと恐怖（買い時）、高いと強欲（売り時）を示唆します。</p></div>
-                <div class="glass-card p-6"><h4 class="font-bold text-blue-400 mb-2">新NISA</h4><p class="text-xs text-gray-400">2024年からの非課税投資制度。無期限で最大1,800万円まで投資利益が非課税になります。</p></div>
-                <div class="glass-card p-6"><h4 class="font-bold text-blue-400 mb-2">配当利回り</h4><p class="text-xs text-gray-400">投資金額に対する年間配当金の割合。高配当銘柄はインカムゲイン狙いの投資家に人気です。</p></div>
-            </div>
-        </div>
-    </section>
-
-    <footer class="py-12 text-center text-[10px] text-gray-600 uppercase tracking-widest border-t border-white/5">
-        <p>© 2026 NextInvest AI. Powered by Gemini & Vercel.</p>
-    </footer>
-
     <script>
-        // --- API Integration (Secure Proxy) ---
-        async function callAI(payload) {
-            // 本番環境では /api/analyze を呼び出します。
-            // プレビュー環境等で動作させる場合は、適切なURLに設定してください。
-            const response = await fetch('/api/analyze', {
+        // API Proxy Call
+        async function fetchAPI(payload) {
+            const res = await fetch('/api/analyze', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
             });
-            if (!response.ok) throw new Error('API request failed');
-            return await response.json();
+            if (!res.ok) throw new Error('API Error');
+            return await res.json();
         }
 
         async function fetchMarketData() {
-            document.getElementById('fg-loading').style.display = 'inline-block';
+            const loadingEl = document.getElementById('fg-loading');
+            if (loadingEl) loadingEl.classList.remove('hidden');
             try {
-                const data = await callAI({ type: 'market_data' });
+                const data = await fetchAPI({ type: 'market_data' });
                 document.getElementById('fg-value').innerText = data.fgValue;
                 document.getElementById('fg-label').innerText = data.fgLabel;
                 document.getElementById('fg-fill').style.transform = `rotate(${(data.fgValue/100)*180+45}deg)`;
                 document.getElementById('fx-rate').innerText = data.usdjpy;
                 document.getElementById('fx-change').innerText = data.usdjpyChange;
-                document.getElementById('idx-sp500').innerText = Number(data.sp500).toLocaleString();
-                document.getElementById('idx-nikkei').innerText = Number(data.nikkei).toLocaleString();
+                document.getElementById('idx-sp500').innerText = data.sp500;
+                document.getElementById('idx-nikkei').innerText = data.nikkei;
                 document.getElementById('update-time').innerText = new Date().toLocaleTimeString();
             } catch (e) {
-                console.error(e);
-                document.getElementById('fg-label').innerText = "Update Failed";
+                document.getElementById('fg-label').innerText = "Fetch Error";
             } finally {
-                document.getElementById('fg-loading').style.display = 'none';
+                if (loadingEl) loadingEl.classList.add('hidden');
             }
         }
 
         let currentTab = 'us';
-        function switchTab(tab) {
-            currentTab = tab;
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            document.getElementById(`tab-${tab}`).classList.add('active');
-        }
+        function switchTab(t) { currentTab = t; document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active')); document.getElementById(`tab-${t}`).classList.add('active'); }
 
         async function runAnalysis() {
             const query = document.getElementById('stock-input').value;
             if (!query) return;
             const resDiv = document.getElementById('analysis-result');
-            resDiv.innerHTML = `<div class="animate-spin rounded-full h-8 w-8 border-t-2 border-blue-500 mb-4"></div><p>AIが最新ニュースと相場を解析中...</p>`;
-
-            let prompt = "";
-            if(currentTab === 'us') prompt = "米国株アナリストとして銘柄の現状、為替影響、Fear & Greed 指標を踏まえた予測を。";
-            else if(currentTab === 'jp') prompt = "日本株専門家として銘柄の配当、優待、利回り、今後のテクニカル分析を。";
-            else prompt = "投信アナリストとして純資産推移、コスト、主要組み入れ銘柄の動向分析を。";
+            resDiv.innerHTML = `<div class="animate-spin h-8 w-8 border-t-2 border-blue-500 rounded-full mb-4"></div><p>分析中...</p>`;
+            
+            const prompt = currentTab === 'us' ? "米国株現状分析と見通し。" : currentTab === 'jp' ? "日本株の利回り・優待・見通し。" : "投資信託の評価。";
 
             try {
-                const data = await callAI({ type: 'analysis', query, prompt });
-                resDiv.innerHTML = `<div class="w-full text-left p-6 leading-relaxed fade-in">${data.text}</div>`;
-                lucide.createIcons();
+                const data = await fetchAPI({ type: 'analysis', query, prompt });
+                resDiv.innerHTML = `<div class="w-full text-left p-6 leading-relaxed fade-in text-sm">${data.text}</div>`;
+                if (typeof lucide !== 'undefined') lucide.createIcons();
             } catch (e) {
-                resDiv.innerHTML = `<p class="text-red-400">解析に失敗しました。APIキーを確認してください。</p>`;
+                resDiv.innerHTML = `<p class="text-red-400">エラーが発生しました。Vercelの環境変数を確認してください。</p>`;
             }
         }
 
-        // --- NISA Simulator ---
+        // --- NISA & Graphics ---
         let nisaChart;
         function initChart() {
             const ctx = document.getElementById('nisaChart').getContext('2d');
-            nisaChart = new Chart(ctx, {
-                type: 'bar',
-                data: { labels: [], datasets: [
-                    { label: '元本', data: [], backgroundColor: '#2563eb', borderRadius: 4, stack: '1' },
-                    { label: '利益', data: [], backgroundColor: '#10b981', borderRadius: 4, stack: '1' }
-                ]},
-                options: {
-                    responsive: true, maintainAspectRatio: false,
-                    scales: {
-                        x: { grid: { display: false }, ticks: { color: '#555', font: { size: 10 } } },
-                        y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#555', font: { size: 10 }, callback: v => (v/10000)+'万' } }
-                    },
-                    plugins: { legend: { display: false } }
-                }
-            });
+            nisaChart = new Chart(ctx, { type: 'bar', data: { labels: [], datasets: [ { label: '元本', data: [], backgroundColor: '#2563eb', stack: '1' }, { label: '利益', data: [], backgroundColor: '#10b981', stack: '1' } ] }, options: { responsive: true, maintainAspectRatio: false, scales: { x: { ticks: { color: '#555' } }, y: { ticks: { color: '#555' } } }, plugins: { legend: { display: false } } } });
         }
         function updateSim() {
             const m = parseInt(document.getElementById('input-monthly').value) * 10000;
@@ -268,20 +189,12 @@
             document.getElementById('val-rate').innerText = document.getElementById('input-rate').value;
             document.getElementById('val-years').innerText = y;
             let labels = [], pArr = [], rArr = [], total = 0, pTotal = 0;
-            for(let i=1; i<=y; i++) {
-                labels.push(i+'Y');
-                for(let j=0; j<12; j++) { total = (total + m) * (1 + r); pTotal += m; }
-                pArr.push(pTotal); rArr.push(total - pTotal);
-            }
-            nisaChart.data.labels = labels;
-            nisaChart.data.datasets[0].data = pArr;
-            nisaChart.data.datasets[1].data = rArr;
-            nisaChart.update();
+            for(let i=1; i<=y; i++) { labels.push(i+'Y'); for(let j=0; j<12; j++) { total = (total + m) * (1 + r); pTotal += m; } pArr.push(pTotal); rArr.push(total - pTotal); }
+            nisaChart.data.labels = labels; nisaChart.data.datasets[0].data = pArr; nisaChart.data.datasets[1].data = rArr; nisaChart.update();
             document.getElementById('val-total').innerText = Math.round(total).toLocaleString()+'円';
             document.getElementById('val-profit').innerText = '+'+Math.round(total-pTotal).toLocaleString()+'円 益';
         }
 
-        // --- Three.js Background ---
         function initThree() {
             const canvas = document.getElementById('fluid-canvas');
             const renderer = new THREE.WebGLRenderer({ canvas, alpha: true });
@@ -289,33 +202,25 @@
             const scene = new THREE.Scene();
             const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
             const uniforms = { u_time: { value: 0 }, u_mouse: { value: new THREE.Vector2(0,0) }, u_resolution: { value: new THREE.Vector2(window.innerWidth, window.innerHeight) } };
-            const material = new THREE.ShaderMaterial({
-                uniforms,
-                fragmentShader: `
-                    uniform float u_time; uniform vec2 u_mouse; uniform vec2 u_resolution;
-                    void main() {
-                        vec2 uv = gl_FragCoord.xy / u_resolution.xy;
-                        float d = distance(uv, u_mouse/u_resolution.xy);
-                        vec3 c1 = vec3(0.01, 0.04, 0.08);
-                        vec3 c2 = vec3(0.0, 0.3, 0.6);
-                        float r = smoothstep(0.7, 0.0, d) * 0.4;
-                        gl_FragColor = vec4(mix(c1, c2, r + sin(u_time*0.3+uv.x*3.0)*0.03), 1.0);
-                    }
-                `
-            });
+            const material = new THREE.ShaderMaterial({ uniforms, fragmentShader: `uniform float u_time; uniform vec2 u_mouse; uniform vec2 u_resolution; void main() { vec2 uv = gl_FragCoord.xy / u_resolution.xy; float d = distance(uv, u_mouse/u_resolution.xy); vec3 c1 = vec3(0.01, 0.04, 0.08); vec3 c2 = vec3(0.0, 0.3, 0.6); float r = smoothstep(0.7, 0.0, d) * 0.4; gl_FragColor = vec4(mix(c1, c2, r + sin(u_time*0.5+uv.x*4.0)*0.03), 1.0); }` });
             scene.add(new THREE.Mesh(new THREE.PlaneGeometry(2,2), material));
             window.addEventListener('mousemove', e => uniforms.u_mouse.value.set(e.clientX, window.innerHeight - e.clientY));
             function animate(t) { uniforms.u_time.value = t*0.001; renderer.render(scene, camera); requestAnimationFrame(animate); }
             animate(0);
         }
 
-        window.onload = () => {
-            lucide.createIcons();
-            initThree();
-            initChart();
-            updateSim();
-            fetchMarketData();
-            ['monthly', 'rate', 'years'].forEach(id => document.getElementById('input-'+id).addEventListener('input', updateSim));
+        window.onload = () => { 
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons(); 
+            }
+            initThree(); 
+            initChart(); 
+            updateSim(); 
+            fetchMarketData(); 
+            ['monthly', 'rate', 'years'].forEach(id => {
+                const el = document.getElementById('input-'+id);
+                if (el) el.addEventListener('input', updateSim);
+            });
         };
     </script>
 </body>

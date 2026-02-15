@@ -49,41 +49,31 @@
         <div class="max-w-6xl mx-auto grid lg:grid-cols-2 gap-16 items-center">
             <div>
                 <h1 class="text-5xl md:text-7xl font-extrabold mb-8 leading-tight">市場の「今」を<br><span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-emerald-400">AIが即時解析。</span></h1>
-                <p class="text-xl text-gray-400 mb-12">最新の Fear & Greed Index や為替変動をダッシュボードに自動反映。AIが24時間市場を監視します。</p>
+                <p class="text-xl text-gray-400 mb-12">最新の Fear & Greed Index をダッシュボードに自動反映。市場の熱狂と恐怖を可視化し、あなたの判断をサポートします。</p>
                 <div class="flex gap-4">
                     <a href="#analysis" class="bg-blue-600 px-8 py-4 rounded-full font-bold hover:bg-blue-500 transition shadow-lg shadow-blue-500/20">AI分析を開始</a>
                 </div>
             </div>
 
-            <div class="grid grid-cols-2 gap-4">
-                <div class="glass-card p-6 flex flex-col items-center justify-center text-center">
-                    <div class="text-[10px] font-bold text-gray-500 mb-4 uppercase flex items-center gap-2">Fear & Greed Index <span id="fg-loading" class="w-2 h-2 bg-blue-500 rounded-full animate-ping hidden"></span></div>
-                    <div class="gauge-container">
+            <div class="flex justify-center">
+                <!-- Fear & Greed Card Only -->
+                <div class="glass-card p-10 flex flex-col items-center justify-center text-center w-full max-w-sm relative">
+                    <div class="text-[10px] font-bold text-gray-500 mb-6 uppercase flex items-center gap-2 tracking-[0.2em]">
+                        Fear & Greed Index 
+                        <span id="fg-loading" class="w-2 h-2 bg-blue-500 rounded-full animate-ping hidden"></span>
+                    </div>
+                    <div class="gauge-container mb-4 scale-125">
                         <div class="gauge-bg"></div>
                         <div id="fg-fill" class="gauge-fill" style="transform: rotate(45deg);"></div>
                         <div class="absolute bottom-0 left-0 w-full text-center">
-                            <div class="text-3xl font-black" id="fg-value">--</div>
-                            <div class="text-[10px] text-gray-400 font-bold uppercase" id="fg-label">Loading...</div>
+                            <div class="text-4xl font-black" id="fg-value">--</div>
+                            <div class="text-[10px] text-gray-400 font-bold uppercase mt-1" id="fg-label">Loading...</div>
                         </div>
                     </div>
-                </div>
-                <div class="glass-card p-6 flex flex-col justify-between">
-                    <div>
-                        <div class="text-[10px] font-bold text-gray-500 mb-1 uppercase">USD / JPY</div>
-                        <div class="text-3xl font-black mb-1" id="fx-rate">---.--</div>
-                        <div class="text-xs font-bold" id="fx-change">--.--</div>
-                    </div>
-                    <div class="mt-4 pt-4 border-t border-white/5 text-[10px] text-gray-500 flex justify-between">
-                        <span>Updated</span>
-                        <span id="update-time">--:--:--</span>
-                    </div>
-                </div>
-                <div class="glass-card p-6 col-span-2 flex items-center justify-between">
-                    <div class="flex gap-8">
-                        <div><div class="text-[10px] font-bold text-gray-500 uppercase">S&P 500</div><div class="text-xl font-black" id="idx-sp500">----.--</div></div>
-                        <div><div class="text-[10px] font-bold text-gray-500 uppercase">Nikkei 225</div><div class="text-xl font-black" id="idx-nikkei">----.--</div></div>
-                    </div>
-                    <button onclick="fetchMarketData()" class="text-blue-400 hover:scale-110 transition p-2"><i data-lucide="refresh-cw" size="20"></i></button>
+                    <button onclick="fetchMarketData()" class="mt-6 text-gray-500 hover:text-blue-400 transition flex items-center gap-2 text-xs">
+                        <i data-lucide="refresh-cw" size="14"></i> データを更新
+                    </button>
+                    <div class="mt-4 text-[10px] text-gray-600 font-mono" id="update-time">--:--:--</div>
                 </div>
             </div>
         </div>
@@ -203,14 +193,12 @@
         // API Proxy Call
         async function fetchAPI(payload) {
             try {
-                // プレビュー環境やローカルファイル環境での判定
                 const isLocalOrPreview = window.location.protocol.startsWith('blob') || 
                                        window.location.hostname === 'localhost' || 
                                        window.location.hostname === '127.0.0.1' ||
                                        window.location.hostname === '';
 
                 if (isLocalOrPreview) {
-                    // プレビュー環境向けのモックデータ（デモ用）
                     if (payload.type === 'market_data') {
                         return {
                             fgValue: 72,
@@ -251,24 +239,25 @@
             try {
                 const data = await fetchAPI({ type: 'market_data' });
                 
-                // 数値データの反映
                 const fgVal = parseInt(data.fgValue) || 50;
-                document.getElementById('fg-value').innerText = fgVal;
-                document.getElementById('fg-label').innerText = data.fgLabel || 'Neutral';
+                const fgValEl = document.getElementById('fg-value');
+                const fgLabelEl = document.getElementById('fg-label');
+                const fgFillEl = document.getElementById('fg-fill');
                 
-                // ゲージのアニメーション
-                const rotation = (fgVal / 100) * 180 + 45;
-                document.getElementById('fg-fill').style.transform = `rotate(${rotation}deg)`;
+                if (fgValEl) fgValEl.innerText = fgVal;
+                if (fgLabelEl) fgLabelEl.innerText = data.fgLabel || 'Neutral';
                 
-                // 各種市場データの更新
-                document.getElementById('fx-rate').innerText = data.usdjpy || '---.--';
-                document.getElementById('fx-change').innerText = data.usdjpyChange || '--.--';
-                document.getElementById('idx-sp500').innerText = data.sp500 || '----.--';
-                document.getElementById('idx-nikkei').innerText = data.nikkei || '----.--';
-                document.getElementById('update-time').innerText = new Date().toLocaleTimeString();
+                if (fgFillEl) {
+                    const rotation = (fgVal / 100) * 180 + 45;
+                    fgFillEl.style.transform = `rotate(${rotation}deg)`;
+                }
+                
+                const updateTimeEl = document.getElementById('update-time');
+                if (updateTimeEl) updateTimeEl.innerText = new Date().toLocaleTimeString();
             } catch (e) {
                 console.error('Market dashboard sync failed:', e.message);
-                document.getElementById('fg-label').innerText = "Sync Error";
+                const fgLabelEl = document.getElementById('fg-label');
+                if (fgLabelEl) fgLabelEl.innerText = "Sync Error";
             } finally {
                 if (loadingEl) loadingEl.classList.add('hidden');
             }
@@ -305,7 +294,9 @@
         // --- NISA Simulator ---
         let nisaChart;
         function initChart() {
-            const ctx = document.getElementById('nisaChart').getContext('2d');
+            const chartCanvas = document.getElementById('nisaChart');
+            if (!chartCanvas) return;
+            const ctx = chartCanvas.getContext('2d');
             nisaChart = new Chart(ctx, { 
                 type: 'bar', 
                 data: { labels: [], datasets: [ { label: '元本', data: [], backgroundColor: '#2563eb', stack: '1' }, { label: '利益', data: [], backgroundColor: '#10b981', stack: '1' } ] }, 
@@ -322,12 +313,22 @@
         }
 
         function updateSim() {
-            const m = parseInt(document.getElementById('input-monthly').value) * 10000;
-            const r = parseFloat(document.getElementById('input-rate').value) / 100 / 12;
-            const y = parseInt(document.getElementById('input-years').value);
-            document.getElementById('val-monthly').innerText = document.getElementById('input-monthly').value;
-            document.getElementById('val-rate').innerText = document.getElementById('input-rate').value;
-            document.getElementById('val-years').innerText = y;
+            const inputMonthly = document.getElementById('input-monthly');
+            const inputRate = document.getElementById('input-rate');
+            const inputYears = document.getElementById('input-years');
+            if (!inputMonthly || !inputRate || !inputYears) return;
+
+            const m = parseInt(inputMonthly.value) * 10000;
+            const r = parseFloat(inputRate.value) / 100 / 12;
+            const y = parseInt(inputYears.value);
+
+            const valMonthly = document.getElementById('val-monthly');
+            const valRate = document.getElementById('val-rate');
+            const valYears = document.getElementById('val-years');
+            if (valMonthly) valMonthly.innerText = inputMonthly.value;
+            if (valRate) valRate.innerText = inputRate.value;
+            if (valYears) valYears.innerText = y;
+
             let labels = [], pArr = [], rArr = [], total = 0, pTotal = 0;
             for(let i=1; i<=y; i++) { 
                 labels.push(i+'Y'); 
@@ -335,17 +336,24 @@
                 pArr.push(pTotal); 
                 rArr.push(Math.max(0, total - pTotal)); 
             }
-            nisaChart.data.labels = labels; 
-            nisaChart.data.datasets[0].data = pArr; 
-            nisaChart.data.datasets[1].data = rArr; 
-            nisaChart.update();
-            document.getElementById('val-total').innerText = Math.round(total).toLocaleString()+'円';
-            document.getElementById('val-profit').innerText = '+'+Math.round(total - pTotal).toLocaleString()+'円 益';
+            
+            if (nisaChart) {
+                nisaChart.data.labels = labels; 
+                nisaChart.data.datasets[0].data = pArr; 
+                nisaChart.data.datasets[1].data = rArr; 
+                nisaChart.update();
+            }
+
+            const valTotal = document.getElementById('val-total');
+            const valProfit = document.getElementById('val-profit');
+            if (valTotal) valTotal.innerText = Math.round(total).toLocaleString()+'円';
+            if (valProfit) valProfit.innerText = '+'+Math.round(total - pTotal).toLocaleString()+'円 益';
         }
 
         // --- Three.js Fluid BG ---
         function initThree() {
             const canvas = document.getElementById('fluid-canvas');
+            if (!canvas) return;
             const renderer = new THREE.WebGLRenderer({ canvas, alpha: true });
             renderer.setSize(window.innerWidth, window.innerHeight);
             const scene = new THREE.Scene();

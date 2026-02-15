@@ -1,61 +1,57 @@
-// api/analyze.js - Vercel Serverless Function
+// api/analyze.js - 全機能統合・エラー対策版
 export default async function handler(req, res) {
-    // 1. POST以外のアクセスを拒否
     if (req.method !== 'POST') {
         return res.status(405).json({ error: 'Method not allowed' });
     }
 
-    // 2. APIキーの存在チェック
     const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) {
-        console.error("GEMINI_API_KEY is not configured.");
         return res.status(500).json({ error: 'APIキーが設定されていません。Vercelの環境変数を確認してください。' });
     }
 
     try {
-        // 3. bodyの安全な取得 (Vercelの自動パース対応)
-        // もしすでにオブジェクトならそのまま使い、文字列ならパースする
-        let bodyData;
-        if (typeof req.body === 'string') {
-            try {
-                bodyData = JSON.parse(req.body);
-            } catch (e) {
-                console.error("Body parse error:", e);
-                return res.status(400).json({ error: 'Invalid JSON format in request body' });
-            }
-        } else {
-            bodyData = req.body;
-        }
-
+        // Vercelの仕様に合わせ、bodyを安全に取得
+        const bodyData = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
         const { type, query, prompt: systemPrompt } = bodyData;
 
-        // 4. Gemini API用のプロンプト構築
         let systemInstruction = "";
         let userMessage = "";
+        let isJsonResponse = false;
 
+        // リクエストタイプ別の処理
         if (type === 'market_data') {
             systemInstruction = `
-                現在（2026年時点）の最新の市場データを調査し、以下のJSON形式でのみ回答してください。
-                解説などは一切不要です。純粋なJSONのみを返してください。
+                今日現在の最新市場データを調査し、以下のJSON形式でのみ回答してください。余計な文章は不要です。
                 {
-                    "fgValue": 0から100の数値,
+                    "fgValue": 0-100の数値,
                     "fgLabel": "Extreme Fear" | "Fear" | "Neutral" | "Greed" | "Extreme Greed",
-                    "usdjpy": "現在のドル円レート(例: 149.20)",
-                    "usdjpyChange": "前日比(例: +0.45%)",
-                    "sp500": "現在のS&P500値",
-                    "nikkei": "現在の日経平均値"
+                    "usdjpy": "現在のレート",
+                    "usdjpyChange": "前日比",
+                    "sp500": "現在の数値",
+                    "nikkei": "現在の数値"
                 }
             `;
-            userMessage = "最新のFear & Greed Index、ドル円為替、S&P500、日経平均の現在値を教えて。";
+            userMessage = "最新の市場指標を教えて。";
+            isJsonResponse = true;
+        } else if (type === 'ranking') {
+            systemInstruction = `
+                今日現在の日本株配当利回りランキング上位3位を調査し、
+                必ず以下のHTML形式（glass-cardクラスを使用）のみで出力してください。優待情報は含めないでください。
+                <div class="glass-card p-8 relative overflow-hidden">
+                    <div class="text-blue-400 font-bold mb-2">RANK #順位</div>
+                    <h3 class="text-xl font-bold mb-1">銘柄名</h3>
+                    <p class="text-sm text-gray-400 mb-4">企業の特徴解説</p>
+                    <div class="text-2xl font-black text-emerald-400">利回り 0.0%</div>
+                </div>
+            `;
+            userMessage = "日本株の高配当ランキング上位3位を教えて。";
         } else {
-            systemInstruction = systemPrompt || "あなたは優秀な投資アナリストです。日本語で回答してください。";
-            userMessage = `対象: ${query}`;
+            systemInstruction = systemPrompt || "プロの投資アナリストとして回答してください。";
+            userMessage = `分析対象: ${query}`;
         }
 
-        // 5. Gemini API (Flash 2.5) を呼び出し
-        const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
-        
-        const response = await fetch(geminiUrl, {
+        // Gemini API呼び出し
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -63,39 +59,29 @@ export default async function handler(req, res) {
                 systemInstruction: { parts: [{ text: systemInstruction }] },
                 tools: [{ "google_search": {} }],
                 generationConfig: { 
-                    responseMimeType: type === 'market_data' ? "application/json" : "text/plain" 
+                    responseMimeType: isJsonResponse ? "application/json" : "text/plain" 
                 }
             })
         });
 
         if (!response.ok) {
-            const errorText = await response.text();
-            console.error("Gemini API Error Response:", errorText);
-            return res.status(response.status).json({ error: 'Gemini APIへの通信に失敗しました。' });
+            const err = await response.json();
+            throw new Error(err.error?.message || 'API通信エラー');
         }
 
-        const result = await response.json();
-        let contentText = result.candidates?.[0]?.content?.parts?.[0]?.text;
+        const apiData = await response.json();
+        let resultText = apiData.candidates?.[0]?.content?.parts?.[0]?.text || "";
 
-        // 6. 結果の返却
-        if (type === 'market_data') {
-            // AIがたまにコードブロックなどで囲ってしまう場合があるため、JSON部分だけを抽出するケア
-            if (contentText.includes('```json')) {
-                contentText = contentText.replace(/```json|```/g, '').trim();
-            }
-            try {
-                const jsonResponse = JSON.parse(contentText);
-                return res.status(200).json(jsonResponse);
-            } catch (e) {
-                console.error("JSON parsing error from AI response:", contentText);
-                return res.status(500).json({ error: 'AIからのデータ形式が不正です。' });
-            }
+        // Markdownの装飾（ ```html や ```json ）が含まれている場合の除去
+        resultText = resultText.replace(/```[a-z]*\n?/g, '').replace(/```/g, '').trim();
+
+        if (isJsonResponse) {
+            res.status(200).json(JSON.parse(resultText));
         } else {
-            return res.status(200).json({ text: contentText });
+            res.status(200).json({ text: resultText });
         }
-
     } catch (error) {
-        console.error("Function Handler Error:", error);
-        return res.status(500).json({ error: 'サーバー内部でエラーが発生しました。' });
+        console.error("Handler Error:", error.message);
+        res.status(500).json({ error: error.message });
     }
 }

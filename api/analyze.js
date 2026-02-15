@@ -1,4 +1,4 @@
-// api/analyze.js - 全機能統合・自動再試行機能付き
+// api/analyze.js - 全機能統合・利用制限対策強化版
 export default async function handler(req, res) {
     if (req.method !== 'POST') {
         return res.status(405).json({ error: 'Method not allowed' });
@@ -54,11 +54,11 @@ export default async function handler(req, res) {
 
         const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
         
-        // --- 自動再試行（指数バックオフ）の実装 ---
+        // --- 指数バックオフによる再試行の実装 ---
         let response;
-        let lastError;
-        const maxRetries = 5;
-        const retryDelays = [1000, 2000, 4000, 8000, 16000];
+        let lastError = "";
+        const maxRetries = 3; 
+        const retryDelays = [2000, 4000, 8000]; // 待機時間を長めに設定
 
         for (let i = 0; i <= maxRetries; i++) {
             response = await fetch(apiUrl, {
@@ -79,23 +79,23 @@ export default async function handler(req, res) {
             const errData = await response.json().catch(() => ({}));
             lastError = errData.error?.message || 'API通信エラー';
 
-            // 429 (Rate Limit) の場合のみ再試行
+            // 429 (Rate Limit / Quota Exceeded) の場合のみ再試行
             if (response.status === 429 && i < maxRetries) {
                 await new Promise(resolve => setTimeout(resolve, retryDelays[i]));
                 continue;
             }
             
-            // それ以外のエラーは即時終了
-            return res.status(response.status).json({ error: lastError });
-        }
-
-        if (!response.ok) {
-            return res.status(429).json({ error: 'AIの利用制限に達しました。1分ほど待ってから再度お試しください。' });
+            // 429以外、またはリトライ回数上限の場合は即時エラーを返す
+            const errorMsg = response.status === 429 
+                ? 'AIの利用制限（1分間あたりの回数制限）に達しました。1分ほど待ってから再度お試しください。' 
+                : lastError;
+            return res.status(response.status).json({ error: errorMsg });
         }
 
         const apiData = await response.json();
         let resultText = apiData.candidates?.[0]?.content?.parts?.[0]?.text || "";
 
+        // Markdown装飾の除去
         resultText = resultText.replace(/```[a-z]*\n?/gi, '').replace(/```/g, '').trim();
 
         if (isJsonResponse) {
